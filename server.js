@@ -3,14 +3,14 @@ const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 
 const app = express();
-const port = process.env.PORT || 3000; // Use Render's provided port or default to 3000
+const port = process.env.PORT || 3000;
 
 // Middleware to parse URL-encoded data
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Telegram Configuration
-const botToken = process.env.BOT_TOKEN; // Replace with your bot token
-const chatId = process.env.CHAT_ID; // Replace with your chat ID
+const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
+const chatId = process.env.CHAT_ID || 'YOUR_CHAT_ID'; // Replace with your chat ID
 
 // Function to send a message to Telegram
 async function sendTelegramMessage(message) {
