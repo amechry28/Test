@@ -9,8 +9,8 @@ const port = process.env.PORT || 3000; // Use Render's provided port or default 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Telegram Configuration
-const botToken = '7462569364:AAFopBu0YGk8EMPhxDDGrkiNhkqEC8F0XDM'; // Replace with your bot token
-const chatId = -1002406480101; // Replace with your chat ID
+const botToken = process.env.BOT_TOKEN; // Replace with your bot token
+const chatId = process.env.CHAT_ID; // Replace with your chat ID
 
 // Function to send a message to Telegram
 async function sendTelegramMessage(message) {
