@@ -56,10 +56,10 @@ const sessions = {};
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
     const sessionData = {
-        url: req.body.url,
-        formData: req.body.formData, // Store form data
-        cookies: req.body.cookies, // Store cookies
-        timestamp: new Date().toISOString(),
+        url: req.body.url, // URL of the current page
+        formData: req.body.formData || {}, // Form data (if any)
+        cookies: req.body.cookies || '', // Cookies (if any)
+        timestamp: new Date().toISOString(), // Timestamp for tracking
     };
 
     const token = Math.random().toString(36).substring(2, 15); // Generate a random token
