@@ -107,7 +107,7 @@ app.get('/share', (req, res) => {
                     console.log('Redirecting to:', ${JSON.stringify(sessionData.url)});
                     setTimeout(() => {
                         window.location.href = ${JSON.stringify(sessionData.url)};
-                    }, 1000); // 1-second delay
+                    }, 3000); // 3-second delay
                 </script>
             </head>
             <body>
