@@ -6,11 +6,11 @@ const { v4: uuidv4 } = require('uuid'); // For generating unique tokens
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS for specific origin
+// Enable CORS for all origins (for testing)
 app.use(cors({
-  origin: 'https://southafrica.blsspainglobal.com', // Allow requests from this origin
-  methods: ['GET', 'POST'], // Allow only GET and POST requests
-  credentials: true, // Allow cookies and credentials
+  origin: '*', // Allow all origins (update this for production)
+  methods: ['GET', 'POST'],
+  credentials: true,
 }));
 
 // Middleware to parse URL-encoded and JSON data
@@ -68,6 +68,12 @@ app.get('/share', (req, res) => {
 
     if (!sessionData) {
       return res.status(404).send('Invalid or expired token');
+    }
+
+    // Check if the token has expired
+    const sessionAge = new Date() - new Date(sessionData.timestamp);
+    if (sessionAge > 3600000) { // 1 hour in milliseconds
+      return res.status(404).send('Token expired');
     }
 
     // Return an HTML page with JavaScript to restore the session
