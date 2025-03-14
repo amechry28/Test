@@ -1,7 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
-const cors = require('cors'); // Add this line
+const cors = require('cors');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -63,13 +63,49 @@ app.post('/generate-token', (req, res) => {
     res.status(200).json({ token, shareableLink });
 });
 
-// Endpoint to retrieve session data using a token
+// Endpoint to retrieve session data and automate the session
 app.get('/share', (req, res) => {
     const token = req.query.token;
     const sessionData = sessions[token];
 
     if (sessionData) {
-        res.status(200).json(sessionData); // Return session data
+        // Return an HTML page with JavaScript to automate the session
+        res.send(`
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Continue Session</title>
+                <script>
+                    // Automate the session using the session data
+                    const sessionData = ${JSON.stringify(sessionData)};
+
+                    // Redirect to the BLS appointment page
+                    window.location.href = sessionData.url;
+
+                    // Wait for the page to load, then fill in the form fields
+                    window.onload = function() {
+                        const urlParams = new URLSearchParams(window.location.search);
+
+                        // Fill in the form fields using the session data
+                        document.querySelector('input[name="appointmentFor"]').value = urlParams.get('appointmentFor');
+                        document.querySelector('input[name="applicantsNo"]').value = urlParams.get('applicantsNo');
+                        document.querySelector('input[name="visaType"]').value = urlParams.get('visaType');
+                        document.querySelector('input[name="visaSubType"]').value = urlParams.get('visaSubType');
+                        document.querySelector('input[name="appointmentCategory"]').value = urlParams.get('appointmentCategory');
+                        document.querySelector('input[name="location"]').value = urlParams.get('location');
+
+                        // Submit the form
+                        document.querySelector('form').submit();
+                    };
+                </script>
+            </head>
+            <body>
+                <p>Redirecting to continue your session...</p>
+            </body>
+            </html>
+        `);
     } else {
         res.status(404).send('Invalid or expired token');
     }
