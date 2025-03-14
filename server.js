@@ -1,9 +1,17 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
+const cors = require('cors'); // Add this line
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Enable CORS for specific origin
+app.use(cors({
+    origin: 'https://southafrica.blsspainglobal.com', // Allow requests from this origin
+    methods: ['GET', 'POST'], // Allow only GET and POST requests
+    credentials: true, // Allow cookies and credentials
+}));
 
 // Middleware to parse URL-encoded and JSON data
 app.use(bodyParser.urlencoded({ extended: true }));
