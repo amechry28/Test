@@ -53,6 +53,9 @@ app.post('/generate-token', (req, res) => {
     sessions[token] = sessionData; // Store session data
 
     const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Shareable link
+    console.log("Generated token:", token); // Log the token
+    console.log("Generated shareable link:", shareableLink); // Log the shareable link
+
     res.status(200).json({ token, shareableLink });
   } catch (error) {
     console.error('Error generating token:', error);
