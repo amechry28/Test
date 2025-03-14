@@ -87,12 +87,15 @@ app.get('/share', (req, res) => {
                 <script>
                     // Restore cookies
                     const cookies = ${JSON.stringify(sessionData.cookies)};
+                    console.log('Cookies to restore:', cookies);
                     cookies.split(';').forEach(cookie => {
-                        document.cookie = cookie.trim();
+                        const [name, value] = cookie.trim().split('=');
+                        document.cookie = \`\${name}=\${value}; path=/; domain=southafrica.blsspainglobal.com; SameSite=None; Secure\`;
                     });
 
                     // Restore form data
                     const formData = ${JSON.stringify(sessionData.formData)};
+                    console.log('Form data to restore:', formData);
                     Object.keys(formData).forEach(name => {
                         const element = document.querySelector(\`[name="\${name}"]\`);
                         if (element) {
@@ -101,7 +104,10 @@ app.get('/share', (req, res) => {
                     });
 
                     // Redirect to the original URL
-                    window.location.href = ${JSON.stringify(sessionData.url)};
+                    console.log('Redirecting to:', ${JSON.stringify(sessionData.url)});
+                    setTimeout(() => {
+                        window.location.href = ${JSON.stringify(sessionData.url)};
+                    }, 1000); // 1-second delay
                 </script>
             </head>
             <body>
