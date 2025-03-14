@@ -81,23 +81,36 @@ app.get('/share', (req, res) => {
                     // Automate the session using the session data
                     const sessionData = ${JSON.stringify(sessionData)};
 
-                    // Redirect to the BLS appointment page
+                    // Step 1: Redirect to the Appointment Management Page
                     window.location.href = sessionData.url;
 
-                    // Wait for the page to load, then fill in the form fields
+                    // Step 2: Wait for the page to load
                     window.onload = function() {
+                        // Step 3: Fill in the form fields (if any)
                         const urlParams = new URLSearchParams(window.location.search);
 
-                        // Fill in the form fields using the session data
-                        document.querySelector('input[name="appointmentFor"]').value = urlParams.get('appointmentFor');
-                        document.querySelector('input[name="applicantsNo"]').value = urlParams.get('applicantsNo');
-                        document.querySelector('input[name="visaType"]').value = urlParams.get('visaType');
-                        document.querySelector('input[name="visaSubType"]').value = urlParams.get('visaSubType');
-                        document.querySelector('input[name="appointmentCategory"]').value = urlParams.get('appointmentCategory');
-                        document.querySelector('input[name="location"]').value = urlParams.get('location');
+                        // Example: Fill in hidden fields (if needed)
+                        const hiddenFields = [
+                            { name: 'appointmentFor', value: urlParams.get('appointmentFor') },
+                            { name: 'applicantsNo', value: urlParams.get('applicantsNo') },
+                            { name: 'visaType', value: urlParams.get('visaType') },
+                            { name: 'visaSubType', value: urlParams.get('visaSubType') },
+                            { name: 'appointmentCategory', value: urlParams.get('appointmentCategory') },
+                            { name: 'location', value: urlParams.get('location') },
+                        ];
 
-                        // Submit the form
-                        document.querySelector('form').submit();
+                        hiddenFields.forEach(field => {
+                            const input = document.querySelector(\`input[name="\${field.name}"]\`);
+                            if (input) {
+                                input.value = field.value;
+                            }
+                        });
+
+                        // Step 4: Submit the form (if needed)
+                        const form = document.querySelector('form');
+                        if (form) {
+                            form.submit();
+                        }
                     };
                 </script>
             </head>
