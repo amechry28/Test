@@ -91,7 +91,11 @@ app.get('/share', (req, res) => {
                     cookies.split(';').forEach(cookie => {
                         const [name, value] = cookie.trim().split('=');
                         document.cookie = \`\${name}=\${value}; path=/; domain=southafrica.blsspainglobal.com; SameSite=None; Secure\`;
+                        console.log('Set cookie:', name, value);
                     });
+
+                    // Verify cookies are set
+                    console.log('Current cookies:', document.cookie);
 
                     // Restore form data
                     const formData = ${JSON.stringify(sessionData.formData)};
@@ -100,14 +104,23 @@ app.get('/share', (req, res) => {
                         const element = document.querySelector(\`[name="\${name}"]\`);
                         if (element) {
                             element.value = formData[name];
+                            console.log('Set form field:', name, formData[name]);
+                        } else {
+                            console.warn('Form field not found:', name);
                         }
                     });
+
+                    // Verify form data is applied
+                    console.log('Form data after restoration:', Object.keys(formData).map(name => {
+                        const element = document.querySelector(\`[name="\${name}"]\`);
+                        return { name, value: element ? element.value : null };
+                    }));
 
                     // Redirect to the original URL
                     console.log('Redirecting to:', ${JSON.stringify(sessionData.url)});
                     setTimeout(() => {
                         window.location.href = ${JSON.stringify(sessionData.url)};
-                    }, 3000); // 3-second delay
+                    }, 2000); // 2-second delay
                 </script>
             </head>
             <body>
