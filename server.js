@@ -18,8 +18,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Telegram Configuration (optional, can be removed if not needed)
-const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
-const chatId = process.env.CHAT_ID || 'YOUR_CHAT_ID'; // Replace with your chat ID
+const botToken = process.env.BOT_TOKEN || '7462569364:AAFopBu0YGk8EMPhxDDGrkiNhkqEC8F0XDM'; // Replace with your bot token
+const chatId = process.env.CHAT_ID || '-1002406480101'; // Replace with your chat ID
 
 // Function to send a message to Telegram (optional, can be removed if not needed)
 async function sendTelegramMessage(message) {
