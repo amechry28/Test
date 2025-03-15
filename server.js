@@ -36,16 +36,16 @@ setInterval(() => {
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
   try {
-    const { url, cookies, formData } = req.body;
+    const { url, cookies, urlParams } = req.body;
 
-    if (!url || !cookies || !formData) {
+    if (!url || !cookies || !urlParams) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
     const sessionData = {
       url, // URL of the current page
       cookies, // Cookies from the target website
-      formData, // Form data (if any)
+      urlParams, // URL parameters
       timestamp: new Date().toISOString(), // Timestamp for tracking
     };
 
