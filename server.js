@@ -78,8 +78,11 @@ app.get('/share', (req, res) => {
         return res.status(404).send('Invalid or expired token');
     }
 
-    // Redirect through the proxy (use the public URL of your proxy server)
-    const proxyUrl = `https://proxy-server-aysn.onrender.com${sessionData.url}`; // Replace with your proxy server URL
+    // Construct the full URL for the proxy server
+    const targetUrl = new URL(sessionData.url, 'https://southafrica.blsspainglobal.com').toString();
+    const proxyUrl = `https://proxy-server-aysn.onrender.com${new URL(targetUrl).pathname}`;
+
+    console.log('Redirecting to:', proxyUrl);
     res.redirect(proxyUrl);
 });
 
