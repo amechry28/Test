@@ -9,9 +9,13 @@ const port = process.env.PORT || 3000;
 // Enable CORS for specific origin
 app.use(cors({
     origin: 'https://southafrica.blsspainglobal.com', // Allow requests from this origin
-    methods: ['GET', 'POST'], // Allow only GET and POST requests
+    methods: ['GET', 'POST', 'OPTIONS'], // Allow GET, POST, and OPTIONS requests
     credentials: true, // Allow cookies and credentials
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
 }));
+
+// Handle preflight requests
+app.options('*', cors()); // Enable preflight for all routes
 
 // Middleware to parse URL-encoded and JSON data
 app.use(bodyParser.urlencoded({ extended: true }));
