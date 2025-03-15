@@ -28,7 +28,9 @@ const sessions = {};
 app.post('/generate-token', (req, res) => {
     const { url, cookies, formData } = req.body;
 
+    // Validate required fields
     if (!url || !cookies || !formData) {
+        console.error("Missing required fields:", { url, cookies, formData });
         return res.status(400).json({ error: 'Missing required fields: url, cookies, or formData' });
     }
 
@@ -42,7 +44,7 @@ app.post('/generate-token', (req, res) => {
     const token = Math.random().toString(36).substring(2, 15); // Generate a random token
     sessions[token] = sessionData; // Store session data
 
-    const shareableLink = `https://your-render-app-url.onrender.com/share?token=${token}`; // Replace with your Render app URL
+    const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Replace with your Render app URL
     res.status(200).json({ token, shareableLink });
 });
 
