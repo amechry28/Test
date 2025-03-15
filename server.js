@@ -68,7 +68,7 @@ app.post('/generate-token', (req, res) => {
     res.status(200).json({ token, shareableLink });
 });
 
-// Endpoint to retrieve session data and automate the session
+// Endpoint to retrieve session data and redirect through the proxy
 app.get('/share', (req, res) => {
     const token = req.query.token;
     const sessionData = sessions[token];
@@ -78,78 +78,9 @@ app.get('/share', (req, res) => {
         return res.status(404).send('Invalid or expired token');
     }
 
-    // Return an HTML page with JavaScript to restore the session
-    res.send(`
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Continue Session</title>
-            <script>
-                // Restore cookies
-                document.cookie = ${JSON.stringify(sessionData.cookies)};
-
-                // Restore form data
-                const formData = ${JSON.stringify(sessionData.formData)};
-                Object.keys(formData).forEach(name => {
-                    const element = document.querySelector(\`[name="\${name}"]\`);
-                    if (element) {
-                        element.value = formData[name];
-                    }
-                });
-
-                // Redirect to the original URL
-                window.location.href = ${JSON.stringify(sessionData.url)};
-            </script>
-        </head>
-        <body>
-            <p>Redirecting to continue your session...</p>
-        </body>
-        </html>
-    `);
-});
-
-// Endpoint to handle incoming data (for Telegram notifications, optional)
-app.post('/telemetry', async (req, res) => {
-    try {
-        const {
-            token,
-            country,
-            location,
-            visaSubType,
-            appointmentFor,
-            category,
-            timeOfSending,
-            appointmentDate,
-            slots
-        } = req.body;
-
-        // Log the received data
-        console.log('Received data:', req.body);
-
-        // Prepare the message for Telegram
-        const message = `
-📅 *New Appointment Slot Available!*
-- *Appointment Date:* ${appointmentDate}
-- *Available Slots:* ${slots}
-- *Location:* ${location}
-- *Category:* ${category}
-- *Visa Subtype:* ${visaSubType}
-- *Time of Sending:* ${timeOfSending}
-        `;
-
-        console.log('Sending message to Telegram:', message); // Log the message
-
-        // Send the message to Telegram (optional)
-        // await sendTelegramMessage(message);
-
-        // Respond to the client
-        res.status(200).send('Data received and Telegram notification sent successfully');
-    } catch (error) {
-        console.error('Error processing request:', error);
-        res.status(500).send('Internal Server Error');
-    }
+    // Redirect through the proxy
+    const proxyUrl = `http://localhost:3001${sessionData.url}`; // Use your proxy server
+    res.redirect(proxyUrl);
 });
 
 // Clean up old sessions every hour
