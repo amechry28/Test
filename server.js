@@ -78,10 +78,11 @@ app.get('/share', (req, res) => {
         return res.status(404).send('Invalid or expired token');
     }
 
-    // Redirect through the proxy
-    const proxyUrl = `http://localhost:3001${sessionData.url}`; // Use your proxy server
+    // Redirect through the proxy (use the public URL of your proxy server)
+    const proxyUrl = `https://proxy-server-aysn.onrender.com${sessionData.url}`; // Replace with your proxy server URL
     res.redirect(proxyUrl);
 });
+
 
 // Clean up old sessions every hour
 setInterval(() => {
