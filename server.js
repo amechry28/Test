@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const fetch = require('node-fetch');
 const cors = require('cors');
 
 const app = express();
@@ -24,19 +23,37 @@ app.use(bodyParser.json());
 // Store session data in memory (replace with a database in production)
 const sessions = {};
 
+// Store cookies in memory (replace with a database in production)
+let capturedCookies = null;
+
+// Endpoint to store cookies captured by the proxy
+app.post('/store-cookies', (req, res) => {
+    const { cookies } = req.body;
+
+    if (!cookies) {
+        return res.status(400).json({ error: 'Missing cookies in request body' });
+    }
+
+    // Store the cookies
+    capturedCookies = cookies;
+    console.log('Stored Cookies:', capturedCookies);
+
+    res.status(200).json({ message: 'Cookies stored successfully' });
+});
+
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
-    const { url, cookies, formData } = req.body;
+    const { url, formData } = req.body;
 
     // Validate required fields
-    if (!url || !cookies || !formData) {
-        console.error("Missing required fields:", { url, cookies, formData });
-        return res.status(400).json({ error: 'Missing required fields: url, cookies, or formData' });
+    if (!url || !formData || !capturedCookies) {
+        console.error("Missing required fields:", { url, formData, cookies: capturedCookies });
+        return res.status(400).json({ error: 'Missing required fields: url, formData, or cookies' });
     }
 
     const sessionData = {
         url,
-        cookies,
+        cookies: capturedCookies, // Use the stored cookies
         formData,
         timestamp: new Date().toISOString(),
     };
