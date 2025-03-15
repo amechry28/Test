@@ -28,6 +28,7 @@ app.post('/store-cookies', (req, res) => {
     const { cookies } = req.body;
 
     if (!cookies) {
+        console.error('Missing cookies in request body');
         return res.status(400).json({ error: 'Missing cookies in request body' });
     }
 
@@ -44,7 +45,7 @@ app.post('/generate-token', (req, res) => {
 
     // Validate required fields
     if (!url || !formData) {
-        console.error("Missing required fields:", { url, formData });
+        console.error('Missing required fields:', { url, formData });
         return res.status(400).json({ error: 'Missing required fields: url or formData' });
     }
 
@@ -62,6 +63,8 @@ app.post('/generate-token', (req, res) => {
     sessions[token] = sessionData; // Store session data
 
     const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Replace with your Render app URL
+    console.log('Generated shareable link:', shareableLink);
+
     res.status(200).json({ token, shareableLink });
 });
 
@@ -71,6 +74,7 @@ app.get('/share', (req, res) => {
     const sessionData = sessions[token];
 
     if (!token || !sessionData) {
+        console.error('Invalid or expired token:', token);
         return res.status(404).send('Invalid or expired token');
     }
 
@@ -156,6 +160,7 @@ setInterval(() => {
         const sessionTime = new Date(session.timestamp);
         if (now - sessionTime > 3600000) { // 1 hour
             delete sessions[token];
+            console.log('Deleted expired session:', token);
         }
     });
 }, 3600000);
