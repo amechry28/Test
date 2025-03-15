@@ -80,7 +80,7 @@ app.get('/share', (req, res) => {
 
     // Construct the full URL for the proxy server
     const targetUrl = new URL(sessionData.url, 'https://southafrica.blsspainglobal.com').toString();
-    const proxyUrl = `https://proxy-server-aysn.onrender.com${new URL(targetUrl).pathname}`;
+    const proxyUrl = `http://localhost:3001${new URL(targetUrl).pathname}`;
 
     console.log('Redirecting to:', proxyUrl);
     res.redirect(proxyUrl);
