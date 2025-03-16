@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000; // Use port 3000 for Render
 
 // Enable CORS for specific origin
 app.use(cors({
-    origin: 'https://southafrica.blsspainglobal.com',
+    origin: 'http://southafrica.blsspainglobal.com',
     methods: ['GET', 'POST', 'OPTIONS'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
