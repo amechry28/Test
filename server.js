@@ -7,7 +7,7 @@ const port = process.env.PORT || 3000; // Use port 3000 for Render
 
 // Enable CORS for specific origin
 app.use(cors({
-    origin: 'http://southafrica.blsspainglobal.com', // Allow requests from this domain
+    origin: 'https://southafrica.blsspainglobal.com', // Allow requests from this domain
     methods: ['GET', 'POST', 'OPTIONS'], // Allow these HTTP methods
     credentials: true, // Allow cookies and credentials
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
@@ -55,6 +55,7 @@ app.post('/generate-token', (req, res) => {
 
     // Use stored cookies if available
     const cookies = capturedCookies || 'No cookies captured';
+    console.log('Using cookies:', cookies); // Log the cookies being used
 
     const sessionData = {
         url,
