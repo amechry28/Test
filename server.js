@@ -12,7 +12,7 @@ app.use(cors({
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
+app.options('*', cors()); // Handle preflight requests for all routes
 // Middleware to parse URL-encoded and JSON data
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
